@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sample;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -20,61 +21,42 @@ import org.kohsuke.stapler.QueryParameter;
 
 public class HelloWorldBuilder extends Builder implements SimpleBuildStep {
 
-    private final String name;
-    private boolean useFrench;
+  private final String name;
 
-    @DataBoundConstructor
-    public HelloWorldBuilder(String name) {
-        this.name = name;
-    }
+  @DataBoundConstructor
+  public HelloWorldBuilder(String name) {
+    this.name = name;
+  }
 
-    public String getName() {
-        return name;
-    }
+  @Override
+  public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher, @NonNull TaskListener listener)
+          throws InterruptedException, IOException {
 
-    public boolean isUseFrench() {
-        return useFrench;
-    }
+    listener.getLogger().println("Name Input: " + this.name);
+  }
 
-    @DataBoundSetter
-    public void setUseFrench(boolean useFrench) {
-        this.useFrench = useFrench;
+  @Symbol("greet")
+  @Extension
+  public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+
+    public FormValidation doCheckName(@QueryParameter String value)
+            throws IOException, ServletException {
+      if (value.isEmpty())
+        return FormValidation.error(Messages.HelloWorldBuilder_DescriptorImpl_errors_missingName());
+      if (value.length() < 4)
+        return FormValidation.warning(Messages.HelloWorldBuilder_DescriptorImpl_warnings_tooShort());
+      return FormValidation.ok();
     }
 
     @Override
-    public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener)
-            throws InterruptedException, IOException {
-        if (useFrench) {
-            listener.getLogger().println("Bonjour, " + name + "!");
-        } else {
-            listener.getLogger().println("Hello, " + name + "!");
-        }
+    public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+      return true;
     }
 
-    @Symbol("greet")
-    @Extension
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
-
-        public FormValidation doCheckName(@QueryParameter String value, @QueryParameter boolean useFrench)
-                throws IOException, ServletException {
-            if (value.length() == 0)
-                return FormValidation.error(Messages.HelloWorldBuilder_DescriptorImpl_errors_missingName());
-            if (value.length() < 4)
-                return FormValidation.warning(Messages.HelloWorldBuilder_DescriptorImpl_warnings_tooShort());
-            if (!useFrench && value.matches(".*[éáàç].*")) {
-                return FormValidation.warning(Messages.HelloWorldBuilder_DescriptorImpl_warnings_reallyFrench());
-            }
-            return FormValidation.ok();
-        }
-
-        @Override
-        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            return true;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return Messages.HelloWorldBuilder_DescriptorImpl_DisplayName();
-        }
+    @NonNull
+    @Override
+    public String getDisplayName() {
+      return Messages.HelloWorldBuilder_DescriptorImpl_DisplayName();
     }
+  }
 }
