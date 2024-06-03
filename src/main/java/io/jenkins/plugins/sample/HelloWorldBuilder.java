@@ -21,18 +21,27 @@ import org.kohsuke.stapler.QueryParameter;
 
 public class HelloWorldBuilder extends Builder implements SimpleBuildStep {
 
-  private final String name;
+  private final String accessToken;
+  private final String profileID;
+  private final String appPath;
+  private final String message;
 
   @DataBoundConstructor
-  public HelloWorldBuilder(String name) {
-    this.name = name;
+  public HelloWorldBuilder(String name, String accessToken, String appPath, String profileID, String message) {
+    this.accessToken = accessToken;
+    this.appPath = appPath;
+    this.profileID = profileID;
+    this.message = message;
   }
 
   @Override
   public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace, @NonNull EnvVars env, @NonNull Launcher launcher, @NonNull TaskListener listener)
           throws InterruptedException, IOException {
 
-    listener.getLogger().println("Name Input: " + this.name);
+    listener.getLogger().println("Access Token Input: " + this.accessToken);
+    listener.getLogger().println("profileID Input: " + this.profileID);
+    listener.getLogger().println("appPath Input: " + this.appPath);
+    listener.getLogger().println("message Input: " + this.message);
   }
 
   @Symbol("greet")

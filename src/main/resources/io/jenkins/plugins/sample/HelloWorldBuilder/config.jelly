@@ -1,6 +1,15 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:entry title="${%Name}" field="name">
+    <f:entry title="${%Access Token}" field="accessToken">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Profile ID}" field="profileID">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%App Path}" field="appPath">
+        <f:textbox />
+    </f:entry>
+    <f:entry title="${%Message}" field="message">
         <f:textbox />
     </f:entry>
 </j:jelly>
