@@ -1,8 +1,8 @@
-package io.jenkins.plugins.sample;
+package io.jenkins.plugins.ac;
 
 import org.junit.Test;
 
-public class HelloWorldBuilderTest {
+public class AppcircleBuilderTest {
     @Test
     public void testConfigRoundtrip() {}
 }

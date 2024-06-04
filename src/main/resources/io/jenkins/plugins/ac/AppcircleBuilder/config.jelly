@@ -2,6 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <f:entry title="${%Access Token}" field="accessToken">
         <f:textbox />
+        <t:help href="help-accessToken.html"/>
     </f:entry>
     <f:entry title="${%Profile ID}" field="profileID">
         <f:textbox />
