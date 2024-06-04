@@ -1,6 +1,7 @@
 package io.jenkins.plugins.ac;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -13,6 +14,8 @@ import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
@@ -59,7 +62,7 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         args.add("appcircle");
         args.add("login");
         args.add("--pat");
-        args.add(this.accessToken);
+        args.add(getInputValue(this.accessToken, "Access Token", env));
 
         int exitCode = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(workspace).join();
 
@@ -79,9 +82,9 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         args.add("appcircle");
         args.add("testing-distribution");
         args.add("upload");
-        args.add("--app", this.appPath);
-        args.add("--distProfileId", this.profileID);
-        args.add("--message", this.message);
+        args.add("--app", getInputValue(this.appPath, "App Path", env));
+        args.add("--distProfileId", getInputValue(this.profileID, "Profile ID", env));
+        args.add("--message", getInputValue(this.message, "Release Message", env));
 
         int exitCode = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(workspace).join();
 
@@ -99,10 +102,11 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
             @NonNull TaskListener listener)
             throws InterruptedException, IOException {
         try {
-            listener.getLogger().println("Access Token Input: " + this.accessToken);
-            listener.getLogger().println("profileID Input: " + this.profileID);
+            listener.getLogger().println("Access Token Input: " + getInputValue(this.accessToken, "Access Token", env));
+            listener.getLogger().println("profileID Input: " + getInputValue(this.profileID, "Profile ID", env));
             listener.getLogger().println("appPath Input: " + this.appPath);
             listener.getLogger().println("message Input: " + this.message);
+            listener.getLogger().println("AC_PAT: " + env.get("AC_PAT"));
 
             listener.getLogger().println("Appcircle CLI Installed");
             loginToAC(launcher, env, listener, workspace);
@@ -114,8 +118,20 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         }
     }
 
-    void getInputValue(String inputValue) {
+    String getInputValue(@Nullable String inputValue, String inputFieldName, EnvVars envVars) throws IOException, InterruptedException {
+        if (inputValue == null) {
+            throw new IOException(inputFieldName + " is empty. Please fulfill the input");
+        }
 
+        Pattern pattern = Pattern.compile("\\$\\((.*?)\\)");
+        Matcher appPathMatcher = pattern.matcher(inputValue);
+
+        if (appPathMatcher.find()) {
+            String variableName = inputValue.substring(2, inputValue.length() - 1);
+            return envVars.get(variableName);
+        }
+
+        return inputValue;
     }
 
     @Symbol("greet")
