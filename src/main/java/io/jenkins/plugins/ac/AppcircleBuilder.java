@@ -37,21 +37,6 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         this.message = message;
     }
 
-    void installNpm(
-            @NonNull Launcher launcher,
-            @NonNull EnvVars env,
-            @NonNull TaskListener listener,
-            @NonNull FilePath workspace)
-            throws IOException, InterruptedException {
-        ArgumentListBuilder args = new ArgumentListBuilder();
-        args.add("npm");
-        args.add("install");
-        args.add("-g");
-        args.add("@appcircle/cli");
-
-        launcher.launch().cmds(args).envs(env).stdout(listener).pwd(workspace).join();
-    }
-
     void loginToAC(
             @NonNull Launcher launcher,
             @NonNull EnvVars env,
@@ -64,7 +49,12 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         args.add("--pat");
         args.add(getInputValue(this.accessToken, "Access Token", env));
 
-        int exitCode = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(workspace).join();
+        int exitCode = launcher.launch()
+                .cmds(args)
+                .envs(env)
+                .stdout(listener)
+                .pwd(workspace)
+                .join();
 
         if (exitCode != 0) {
             throw new IOException("Failed to log in to Appcircle. Exit code: " + exitCode);
@@ -78,7 +68,6 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
             @NonNull FilePath workspace)
             throws IOException, InterruptedException {
         ArgumentListBuilder args = new ArgumentListBuilder();
-        // Add the command itself
         args.add("appcircle");
         args.add("testing-distribution");
         args.add("upload");
@@ -86,7 +75,12 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         args.add("--distProfileId", getInputValue(this.profileID, "Profile ID", env));
         args.add("--message", getInputValue(this.message, "Release Message", env));
 
-        int exitCode = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(workspace).join();
+        int exitCode = launcher.launch()
+                .cmds(args)
+                .envs(env)
+                .stdout(listener)
+                .pwd(workspace)
+                .join();
 
         if (exitCode != 0) {
             throw new IOException("Failed to upload build to Appcircle. Exit code: " + exitCode);
@@ -102,23 +96,16 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
             @NonNull TaskListener listener)
             throws InterruptedException, IOException {
         try {
-            listener.getLogger().println("Access Token Input: " + getInputValue(this.accessToken, "Access Token", env));
-            listener.getLogger().println("profileID Input: " + getInputValue(this.profileID, "Profile ID", env));
-            listener.getLogger().println("appPath Input: " + this.appPath);
-            listener.getLogger().println("message Input: " + this.message);
-            listener.getLogger().println("AC_PAT: " + env.get("AC_PAT"));
-
-            listener.getLogger().println("Appcircle CLI Installed");
             loginToAC(launcher, env, listener, workspace);
             uploadArtifact(launcher, env, listener, workspace);
-
         } catch (Exception e) {
             listener.getLogger().println("Failed to run command and parse JSON: " + e.getMessage());
             throw e;
         }
     }
 
-    String getInputValue(@Nullable String inputValue, String inputFieldName, EnvVars envVars) throws IOException, InterruptedException {
+    String getInputValue(@Nullable String inputValue, String inputFieldName, EnvVars envVars)
+            throws IOException, InterruptedException {
         if (inputValue == null) {
             throw new IOException(inputFieldName + " is empty. Please fulfill the input");
         }
