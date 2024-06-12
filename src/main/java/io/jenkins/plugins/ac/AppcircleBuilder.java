@@ -13,24 +13,27 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
 public class AppcircleBuilder extends Builder implements SimpleBuildStep {
 
-    private final String accessToken;
+    private final Secret accessToken;
     private final String profileID;
     private final String appPath;
     private final String message;
 
     @DataBoundConstructor
-    public AppcircleBuilder(String accessToken, String appPath, String profileID, String message) {
+    public AppcircleBuilder(Secret accessToken, String appPath, String profileID, String message) {
         this.accessToken = accessToken;
         this.appPath = appPath;
         this.profileID = profileID;
@@ -47,7 +50,7 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         args.add("appcircle");
         args.add("login");
         args.add("--pat");
-        args.add(getInputValue(this.accessToken, "Access Token", env));
+        args.add(getInputValue(this.accessToken.getPlainText(), "Access Token", env));
 
         int exitCode = launcher.launch()
                 .cmds(args)
@@ -125,21 +128,26 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
+        @POST
         public FormValidation doCheckAccessToken(@QueryParameter String value) throws IOException, ServletException {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             if (value.isEmpty()) return FormValidation.error("Access Token cannot be empty");
             return FormValidation.ok();
         }
 
+        @POST
         public FormValidation doCheckAppPath(@QueryParameter String value) throws IOException, ServletException {
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
             return FormValidation.ok();
         }
 
+        @POST
         public FormValidation doCheckProfileID(@QueryParameter String value) throws IOException, ServletException {
             if (value.isEmpty()) return FormValidation.error("Profile ID cannot be empty");
             return FormValidation.ok();
         }
 
+        @POST
         public FormValidation doCheckMessage(@QueryParameter String value) throws IOException, ServletException {
             if (value.isEmpty()) return FormValidation.error("Message cannot be empty");
             return FormValidation.ok();
