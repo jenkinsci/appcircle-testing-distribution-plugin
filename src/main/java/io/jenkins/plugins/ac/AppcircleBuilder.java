@@ -137,18 +137,21 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
 
         @POST
         public FormValidation doCheckAppPath(@QueryParameter String value) throws IOException, ServletException {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
             return FormValidation.ok();
         }
 
         @POST
         public FormValidation doCheckProfileID(@QueryParameter String value) throws IOException, ServletException {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             if (value.isEmpty()) return FormValidation.error("Profile ID cannot be empty");
             return FormValidation.ok();
         }
 
         @POST
         public FormValidation doCheckMessage(@QueryParameter String value) throws IOException, ServletException {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             if (value.isEmpty()) return FormValidation.error("Message cannot be empty");
             return FormValidation.ok();
         }
