@@ -14,13 +14,23 @@ import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.jenkinsci.Symbol;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
@@ -64,7 +74,93 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         }
     }
 
-    void uploadArtifact(
+    private String getAccessToken(
+            @NonNull Launcher launcher,
+            @NonNull EnvVars env,
+            @NonNull TaskListener listener,
+            @NonNull FilePath workspace)
+            throws IOException, InterruptedException {
+
+        ArgumentListBuilder args = new ArgumentListBuilder();
+        args.add("appcircle");
+        args.add("config");
+        args.add("get");
+        args.add("AC_ACCESS_TOKEN");
+        args.add("-o");
+        args.add("json");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        int exitCode = launcher.launch()
+                .cmds(args)
+                .envs(env)
+                .stdout(outputStream)
+                .pwd(workspace)
+                .join();
+
+        if (exitCode != 0) {
+            throw new IOException("Failed to get AC_ACCESS_TOKEN. Exit code: " + exitCode);
+        }
+
+        String output = outputStream.toString(StandardCharsets.UTF_8.name());
+
+        // Parse the JSON response
+        String accessToken = parseAccessTokenFromJson(output);
+        if (accessToken == null) {
+            throw new IOException("Failed to parse AC_ACCESS_TOKEN from response: " + output);
+        }
+
+        return accessToken;
+    }
+
+    private String parseAccessTokenFromJson(String jsonResponse) {
+        try {
+            JSONObject jsonObject = new JSONObject(jsonResponse);
+            return jsonObject.optString("AC_ACCESS_TOKEN", null);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    Boolean checkUploadStatus(String taskId, String token, @NonNull TaskListener listener, @NonNull Launcher launcher, @NonNull EnvVars env) {
+        String url = "https://api.appcircle.io/task/v1/tasks/" + taskId;
+        String result = "";
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet request = new HttpGet(url);
+            request.setHeader("Authorization", "Bearer " + token);
+
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+                    result = EntityUtils.toString(entity);
+                }
+
+                JSONObject jsonRespnse = new JSONObject(result);
+                @Nullable Integer stateValue = jsonRespnse.optInt("stateValue", -1);
+                @Nullable String stateName = jsonRespnse.optString("stateName");
+
+                if (stateName == null || stateValue == null) {
+                    listener.getLogger().println("Upload Status Could Not Received");
+                }
+                else if (stateValue == 2) {
+                    listener.getLogger().println("App uploaded but could not processed");
+                } else if (stateValue == 1) {
+                    Thread.sleep(2000);
+                    return checkUploadStatus(taskId, token, listener, launcher, env);
+                } else if (stateValue == 3) {
+                    listener.getLogger().println("✔ App uploaded successfully.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("IO Exception occurred while executing request: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return true;
+    }
+
+    String uploadArtifact(
             @NonNull Launcher launcher,
             @NonNull EnvVars env,
             @NonNull TaskListener listener,
@@ -77,17 +173,28 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         args.add("--app", getInputValue(this.appPath, "App Path", env));
         args.add("--distProfileId", getInputValue(this.profileID, "Profile ID", env));
         args.add("--message", getInputValue(this.message, "Release Message", env));
+        args.add("-o");
+        args.add("json");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         int exitCode = launcher.launch()
                 .cmds(args)
                 .envs(env)
-                .stdout(listener)
+                .stdout(outputStream)
                 .pwd(workspace)
                 .join();
 
         if (exitCode != 0) {
             throw new IOException("Failed to upload build to Appcircle. Exit code: " + exitCode);
         }
+
+        String output = outputStream.toString(StandardCharsets.UTF_8.name());
+        JSONObject jsonObject = new JSONObject(output);
+        String taskID = jsonObject.getString("taskId");
+        listener.getLogger().println("TASK ID: " + taskID);
+
+        return taskID;
     }
 
     @Override
@@ -99,8 +206,12 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
             @NonNull TaskListener listener)
             throws InterruptedException, IOException {
         try {
+
             loginToAC(launcher, env, listener, workspace);
-            uploadArtifact(launcher, env, listener, workspace);
+            String taskID = uploadArtifact(launcher, env, listener, workspace);
+            String acToken = getAccessToken(launcher, env, listener, workspace);
+            checkUploadStatus(taskID, acToken, listener, launcher, env);
+
         } catch (Exception e) {
             listener.getLogger().println("Failed to run command and parse JSON: " + e.getMessage());
             throw e;
@@ -124,7 +235,7 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         return inputValue;
     }
 
-    @Symbol("greet")
+    @Symbol("appcircleTestingDistribution")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 

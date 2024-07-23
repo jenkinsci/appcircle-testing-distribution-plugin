@@ -79,6 +79,22 @@ Utilize environment variables seamlessly by substituting the parameters with `$(
 
 Efficiently distribute test binaries or beta versions using Appcircle, featuring seamless IPA and APK distribution capabilities. Streamline your testing process with our versatile tool designed to optimize your distribution workflow. If you need support or more information, please [contact us](https://appcircle.io/contact)
 
+### Using Plugin into Your Script
+
+```Groovy
+   stage('Publish') {
+      environment {
+         AC_PAT = credentials('$AC_PAT')
+      }
+       steps {
+           appcircleTestingDistribution accessToken: hudson.util.Secret.fromString('AC_PAT'),
+                   profileID: 'PROFILE_ID',
+                   appPath: 'APP_PATH',
+                   message: 'MESSAGe'
+       }
+   }
+```
+
 ### Reference
 
 - For details on generating an Appcircle Personal Access Token, visit [Generating/Managing Personal API Tokens](https://docs.appcircle.io/appcircle-api/api-authentication#generatingmanaging-the-personal-api-tokens)
