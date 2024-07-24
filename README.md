@@ -87,10 +87,12 @@ Efficiently distribute test binaries or beta versions using Appcircle, featuring
          AC_PAT = credentials('AC_PAT')
       }
        steps {
-           appcircleTestingDistribution accessToken: hudson.util.Secret.fromString('AC_PAT'),
-                   profileID: 'PROFILE_ID',
-                   appPath: 'APP_PATH',
-                   message: 'MESSAGe'
+          withCredentials([string(credentialsId: 'CREDENTIAL_ID', variable: 'VARIABLE_NAME')]) {
+             appcircleTestingDistribution accessToken: hudson.util.Secret.fromString('VARIABLE_NAME'),
+                     profileID: 'PROFILE_ID',
+                     appPath: 'APP_PATH',
+                     message: 'MESSAGE'  
+          }
        }
    }
 ```
