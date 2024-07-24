@@ -1,4 +1,4 @@
-package io.jenkins.plugins.ac;
+package io.jenkins.plugins.appcircle.testing.distribution;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
-import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -35,7 +34,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
-public class AppcircleBuilder extends Builder implements SimpleBuildStep {
+public class TestingDistributionBuilder extends Builder implements SimpleBuildStep {
 
     private final Secret accessToken;
     private final String profileID;
@@ -43,7 +42,7 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
     private final String message;
 
     @DataBoundConstructor
-    public AppcircleBuilder(Secret accessToken, String appPath, String profileID, String message) {
+    public TestingDistributionBuilder(Secret accessToken, String appPath, String profileID, String message) {
         this.accessToken = accessToken;
         this.appPath = appPath;
         this.profileID = profileID;
@@ -60,21 +59,18 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         args.add("appcircle");
         args.add("login");
         args.add("--pat");
-        args.add(getInputValue(this.accessToken.getPlainText(), "Access Token", env));
+        args.add(this.accessToken.getPlainText());
 
-        int exitCode = launcher.launch()
-                .cmds(args)
-                .envs(env)
-                .stdout(listener)
-                .pwd(workspace)
-                .join();
+        int exitCode = launcher.launch().cmds(args).envs(env).pwd(workspace).join();
 
         if (exitCode != 0) {
             throw new IOException("Failed to log in to Appcircle. Exit code: " + exitCode);
         }
+
+        listener.getLogger().println("Login is successful.");
     }
 
-    private String getAccessToken(
+    private String getAppcirclePAT(
             @NonNull Launcher launcher,
             @NonNull EnvVars env,
             @NonNull TaskListener listener,
@@ -122,7 +118,12 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         }
     }
 
-    Boolean checkUploadStatus(String taskId, String token, @NonNull TaskListener listener, @NonNull Launcher launcher, @NonNull EnvVars env) {
+    Boolean checkUploadStatus(
+            String taskId,
+            String token,
+            @NonNull TaskListener listener,
+            @NonNull Launcher launcher,
+            @NonNull EnvVars env) {
         String url = "https://api.appcircle.io/task/v1/tasks/" + taskId;
         String result = "";
 
@@ -142,8 +143,7 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
 
                 if (stateName == null || stateValue == null) {
                     listener.getLogger().println("Upload Status Could Not Received");
-                }
-                else if (stateValue == 2) {
+                } else if (stateValue == 2) {
                     listener.getLogger().println("App uploaded but could not processed");
                 } else if (stateValue == 1) {
                     Thread.sleep(2000);
@@ -209,7 +209,7 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
 
             loginToAC(launcher, env, listener, workspace);
             String taskID = uploadArtifact(launcher, env, listener, workspace);
-            String acToken = getAccessToken(launcher, env, listener, workspace);
+            String acToken = getAppcirclePAT(launcher, env, listener, workspace);
             checkUploadStatus(taskID, acToken, listener, launcher, env);
 
         } catch (Exception e) {
@@ -240,29 +240,29 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
         @POST
-        public FormValidation doCheckAccessToken(@QueryParameter String value) throws IOException, ServletException {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        public FormValidation doCheckAccessToken(@QueryParameter @NonNull String value)
+                throws IOException, ServletException {
             if (value.isEmpty()) return FormValidation.error("Access Token cannot be empty");
             return FormValidation.ok();
         }
 
         @POST
-        public FormValidation doCheckAppPath(@QueryParameter String value) throws IOException, ServletException {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        public FormValidation doCheckAppPath(@QueryParameter @NonNull String value)
+                throws IOException, ServletException {
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
             return FormValidation.ok();
         }
 
         @POST
-        public FormValidation doCheckProfileID(@QueryParameter String value) throws IOException, ServletException {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        public FormValidation doCheckProfileID(@QueryParameter @NonNull String value)
+                throws IOException, ServletException {
             if (value.isEmpty()) return FormValidation.error("Profile ID cannot be empty");
             return FormValidation.ok();
         }
 
         @POST
-        public FormValidation doCheckMessage(@QueryParameter String value) throws IOException, ServletException {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        public FormValidation doCheckMessage(@QueryParameter @NonNull String value)
+                throws IOException, ServletException {
             if (value.isEmpty()) return FormValidation.error("Message cannot be empty");
             return FormValidation.ok();
         }
@@ -275,7 +275,7 @@ public class AppcircleBuilder extends Builder implements SimpleBuildStep {
         @NonNull
         @Override
         public String getDisplayName() {
-            return Messages.HelloWorldBuilder_DescriptorImpl_DisplayName();
+            return Messages.TestingDistribution_DescriptorImpl_DisplayName();
         }
     }
 }

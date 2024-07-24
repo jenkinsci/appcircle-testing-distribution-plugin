@@ -44,7 +44,7 @@ To share your builds with testers, you can create distribution profiles and assi
 
 In order to share your builds with testers, you can create distribution profiles and assign testing groups to the distribution profiles.
 
-![Distribution Profile](./src/main/resources/assets/distribution-start.png)
+![Distribution Profile](docs/assets/distribution-start.png)
 
 ### Generating/Managing the Personal API Tokens
 
@@ -54,19 +54,19 @@ To generate a Personal API Token, follow these steps:
 2. You'll find the Personal API Token section in the top right corner.
 3. Press the "Generate Token" button to generate your first token.
 
-![Token Generation](./src/main/resources/assets/PAT.png)
+![Token Generation](docs/assets/PAT.png)
 
 ### Install Appcircle Testing Distribution Plugin
 
 Go to your Jenkins dashboard and follow, Manage Jenkins > Plugins and search for "Appcircle Testing Distribution"
 
-![Installation Steps](./src/main/resources/assets/installation_steps.png)
+![Installation Steps](docs/assets/installation_steps.png)
 
 ### Add Plugin in Build Steps
 
 Go to your configuration page of the project add a build step.
 
-![Build Step](./src/main/resources/assets/add_pannel.png)
+![Build Step](docs/assets/add_pannel.png)
 
 ### Configure Plugin
 
@@ -84,7 +84,7 @@ Efficiently distribute test binaries or beta versions using Appcircle, featuring
 ```Groovy
    stage('Publish') {
       environment {
-         AC_PAT = credentials('$AC_PAT')
+         AC_PAT = credentials('AC_PAT')
       }
        steps {
            appcircleTestingDistribution accessToken: hudson.util.Secret.fromString('AC_PAT'),
