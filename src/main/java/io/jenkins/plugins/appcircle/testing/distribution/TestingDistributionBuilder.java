@@ -1,0 +1,118 @@
+package io.jenkins.plugins.appcircle.testing.distribution;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractProject;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
+import hudson.util.FormValidation;
+import hudson.util.Secret;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import javax.servlet.ServletException;
+import jenkins.tasks.SimpleBuildStep;
+import org.jenkinsci.Symbol;
+import org.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
+
+public class TestingDistributionBuilder extends Builder implements SimpleBuildStep {
+
+    private final Secret accessToken;
+    private final String profileName;
+    private final Boolean createProfileIfNotExists;
+    private final String appPath;
+    private final String message;
+
+    @DataBoundConstructor
+    public TestingDistributionBuilder(
+            String accessToken, String appPath, String profileName, Boolean createProfileIfNotExists, String message) {
+        this.accessToken = Secret.fromString(accessToken);
+        this.appPath = appPath;
+        this.profileName = profileName;
+        this.createProfileIfNotExists = createProfileIfNotExists;
+        this.message = message;
+    }
+
+    @Override
+    public void perform(
+            @NonNull Run<?, ?> run,
+            @NonNull FilePath workspace,
+            @NonNull EnvVars env,
+            @NonNull Launcher launcher,
+            @NonNull TaskListener listener)
+            throws InterruptedException, IOException {
+        try {
+            UserResponse response = AuthService.getAcToken(this.accessToken.getPlainText(), listener);
+            listener.getLogger().println("Login is successful.");
+
+            UploadService uploadService = new UploadService(
+                    response.getAccessToken(), message, appPath, profileName, this.createProfileIfNotExists);
+
+            String profileIdFromName = uploadService.getProfileId();
+            JSONObject uploadResponse = uploadService.uploadArtifact(profileIdFromName);
+            listener.getLogger().println("App upload process - task id: " + uploadResponse.optString("taskId"));
+            uploadService.checkUploadStatus(uploadResponse.optString("taskId"), listener);
+
+        } catch (URISyntaxException e) {
+            listener.error("Invalid URI: " + e.getMessage());
+        } catch (Exception e) {
+            listener.getLogger().println("Failed to run command and parse JSON: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Symbol("appcircleTestingDistribution")
+    @Extension
+    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+
+        @POST
+        public FormValidation doCheckAccessToken(@QueryParameter @NonNull String value)
+                throws IOException, ServletException {
+            if (value.isEmpty()) return FormValidation.error("Access Token cannot be empty");
+            return FormValidation.ok();
+        }
+
+        @POST
+        public FormValidation doCheckAppPath(@QueryParameter @NonNull String value)
+                throws IOException, ServletException {
+            if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
+            return FormValidation.ok();
+        }
+
+        @POST
+        public FormValidation doCheckProfileName(@QueryParameter @NonNull String value)
+                throws IOException, ServletException {
+            if (value.isEmpty()) return FormValidation.error("Profile Name cannot be empty");
+            return FormValidation.ok();
+        }
+
+        @POST
+        public FormValidation doCheckCreateProfileIfNotExists(@QueryParameter Boolean value) {
+            return FormValidation.ok();
+        }
+
+        @POST
+        public FormValidation doCheckMessage(@QueryParameter @NonNull String value) {
+            if (value.isEmpty()) return FormValidation.error("Message cannot be empty");
+            return FormValidation.ok();
+        }
+
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+            return true;
+        }
+
+        @NonNull
+        @Override
+        public String getDisplayName() {
+            return Messages.TestingDistribution_DescriptorImpl_DisplayName();
+        }
+    }
+}
