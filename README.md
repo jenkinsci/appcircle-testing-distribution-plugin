@@ -73,12 +73,6 @@ Go to your configuration page of the project add a build step.
 After adding the plugin into your build steps make sure you fulfill required inputs.
 Also, do not forget to add the plugin after your build steps. Because you will be asked to provide the build path.
 
-### Leveraging Environment Variables
-
-Utilize environment variables seamlessly by substituting the parameters with `$(VARIABLE_NAME)` in your task inputs. The extension automatically retrieves values from the specified environment variables within your pipeline.
-
-Efficiently distribute test binaries or beta versions using Appcircle, featuring seamless IPA and APK distribution capabilities. Streamline your testing process with our versatile tool designed to optimize your distribution workflow. If you need support or more information, please [contact us](https://appcircle.io/contact)
-
 ### Using Plugin into Your Script
 
 ```Groovy

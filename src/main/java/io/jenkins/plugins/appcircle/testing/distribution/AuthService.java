@@ -48,11 +48,8 @@ public class AuthService {
 
             return new UserResponse(accessToken);
         } else {
-            listener.error("Login failed.... ");
-            listener.error("Response body: " + response);
-
             throw new IOException(
-                    "HTTP Request failed (" + response.getStatusLine().getStatusCode() + " "
+                    "Login Request failed (" + response.getStatusLine().getStatusCode() + " "
                             + response.getStatusLine().getReasonPhrase() + ")" + response);
         }
     }
