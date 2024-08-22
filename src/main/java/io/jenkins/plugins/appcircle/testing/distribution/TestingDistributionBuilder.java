@@ -6,6 +6,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -14,6 +15,7 @@ import hudson.util.FormValidation;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import javax.servlet.ServletException;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
@@ -49,6 +51,11 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
             @NonNull TaskListener listener)
             throws InterruptedException, IOException {
         try {
+            if (!validateFileExtension(this.appPath)) {
+                throw new IOException("Invalid file extension: " + this.appPath
+                        + ". For Android, use .apk or .aab. For iOS, use .ipa.");
+            }
+
             UserResponse response = AuthService.getAcToken(this.accessToken.getPlainText(), listener);
             listener.getLogger().println("Login is successful.");
 
@@ -63,9 +70,21 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         } catch (URISyntaxException e) {
             listener.error("Invalid URI: " + e.getMessage());
         } catch (Exception e) {
-            listener.getLogger().println("Failed to run command and parse JSON: " + e.getMessage());
-            throw e;
+            listener.getLogger().println(e.getMessage());
+            run.setResult(Result.FAILURE);
         }
+    }
+
+    Boolean validateFileExtension(String filePath) {
+        String[] validExtensions = {".apk", ".aab", ".ipa", ".zip"};
+        int lastIndex = filePath.lastIndexOf('.');
+        String fileExtension = filePath.substring(lastIndex);
+
+        if (!Arrays.asList(validExtensions).contains(fileExtension)) {
+            return false;
+        }
+
+        return true;
     }
 
     @Symbol("appcircleTestingDistribution")
@@ -80,15 +99,21 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         }
 
         @POST
-        public FormValidation doCheckAppPath(@QueryParameter @NonNull String value)
-                throws IOException, ServletException {
+        public FormValidation doCheckAppPath(@QueryParameter @NonNull String value) {
+            String[] validExtensions = {".apk", ".aab", ".ipa", ".zip"};
+            int lastIndex = value.lastIndexOf('.');
+            String fileExtension = value.substring(lastIndex);
+
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
+            if (!Arrays.asList(validExtensions).contains(fileExtension)) {
+                return FormValidation.error("Invalid file extension: " + fileExtension
+                        + ". For Android, use .apk or .aab. For iOS, use .ipa.");
+            }
             return FormValidation.ok();
         }
 
         @POST
-        public FormValidation doCheckProfileName(@QueryParameter @NonNull String value)
-                throws IOException, ServletException {
+        public FormValidation doCheckProfileName(@QueryParameter @NonNull String value) {
             if (value.isEmpty()) return FormValidation.error("Profile Name cannot be empty");
             return FormValidation.ok();
         }
