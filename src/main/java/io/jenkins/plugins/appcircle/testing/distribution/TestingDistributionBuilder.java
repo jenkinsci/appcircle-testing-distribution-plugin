@@ -54,7 +54,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         try {
             if (!validateFileExtension(this.appPath)) {
                 throw new IOException("Invalid file extension: " + this.appPath
-                        + ". For Android, use .apk or .aab. For iOS, use .ipa.");
+                        + ". For Android, use .apk or .aab. For iOS, use .ipa or use zip for both");
             }
 
             UserResponse response = AuthService.getAcToken(this.personalAPIToken.getPlainText(), listener);
@@ -104,7 +104,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
             if (!value.matches(".*\\.(apk|aab|ipa|zip)$")) {
                 return FormValidation.error(
-                        "Invalid file extension: For Android, use .apk or .aab. For iOS, use .ipa.");
+                        "Invalid file extension: For Android, use .apk or .aab. For iOS, use .ipa or use zip for both");
             }
             return FormValidation.ok();
         }
