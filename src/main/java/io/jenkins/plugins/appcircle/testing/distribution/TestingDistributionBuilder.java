@@ -102,7 +102,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         @POST
         public FormValidation doCheckAppPath(@QueryParameter @NonNull String value) {
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
-            if (!value.matches("\".*\\\\.(apk|aab|ipa|zip)$\"")) {
+            if (!value.matches(".*\\.(apk|aab|ipa|zip)$")) {
                 return FormValidation.error(
                         "Invalid file extension: For Android, use .apk or .aab. For iOS, use .ipa.");
             }
