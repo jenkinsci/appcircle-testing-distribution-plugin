@@ -1,10 +1,7 @@
 package io.jenkins.plugins.appcircle.testing.distribution;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
+import hudson.*;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -16,6 +13,7 @@ import hudson.util.Secret;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
@@ -100,14 +98,9 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
 
         @POST
         public FormValidation doCheckAppPath(@QueryParameter @NonNull String value) {
-            String[] validExtensions = {".apk", ".aab", ".ipa", ".zip"};
-            int lastIndex = value.lastIndexOf('.');
-            String fileExtension = value.substring(lastIndex);
-
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
-            if (!Arrays.asList(validExtensions).contains(fileExtension)) {
-                return FormValidation.error("Invalid file extension: " + fileExtension
-                        + ". For Android, use .apk or .aab. For iOS, use .ipa.");
+            if (!value.matches("\".*\\\\.(apk|aab|ipa|zip)$\"")) {
+                return FormValidation.error("Invalid file extension: For Android, use .apk or .aab. For iOS, use .ipa.");
             }
             return FormValidation.ok();
         }
