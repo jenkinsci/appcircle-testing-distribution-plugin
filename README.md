@@ -36,6 +36,20 @@ Testing distribution is the process of distributing test builds to designated te
 
 Overall, using testing distribution in mobile DevOps significantly enhances the efficiency, security, and effectiveness of the software development process, leading to better products and faster delivery times.
 
+## System Requirements
+
+**Compatible Agents:**
+
+- macOS
+- Ubuntu
+- Ventura
+
+**Supported Version:**
+
+- Jenkins 2.440.3
+
+Note: We currently support **Appcircle Cloud**, with **self-hosted** support planned in our roadmap.
+
 ## Getting started
 
 To share your builds with testers, you can create distribution profiles and assign testing groups to these profiles.
@@ -81,22 +95,24 @@ Also, do not forget to add the plugin after your build steps. Because you will b
          AC_PAT = credentials('AC_PAT')
       }
        steps {
-          appcircleTestingDistribution accessToken: AC_PAT,
+          appcircleTestingDistribution personalAPIToken: AC_PAT,
                   profileName: 'PROFILE_NAME',
-                  createProfileIfNotExists: false, // defaults false, set true to create if the profile not exists
+                  createProfileIfNotExists: false,
                   appPath: 'APP_PATH',
                   message: 'MESSAGE'
        }
    }
 ```
 
-#### Automatic Profile Management
-
-**createProfileIfNotExists** paramater ensures that a user profile is automatically created if it does not already exist; if the profile name already exists, the app will be uploaded to that existing profile instead.
+- `personalAPIToken`: The Appcircle Personal API token is utilized to authenticate and secure access to Appcircle services, ensuring that only authorized users can perform actions within the platform.
+- `profileName`: Specifies the profile that will be used for uploading the app.
+- `createProfileIfNotExists`: Ensures that a user profile is automatically created if it does not already exist; if the profile name already exists, the app will be uploaded to that existing profile instead.
+- `appPath`: Indicates the file path to the application that will be uploaded to Appcircle Testing Distribution Profile.
+- `message`: Your message to testers, ensuring they receive important updates and information regarding the application.
 
 ### Reference
 
-- For details on generating an Appcircle Personal Access Token, visit [Generating/Managing Personal API Tokens](https://docs.appcircle.io/appcircle-api/api-authentication#generatingmanaging-the-personal-api-tokens)
+- For details on generating an Appcircle Personal API Token, visit [Generating/Managing Personal API Tokens](https://docs.appcircle.io/appcircle-api/api-authentication#generatingmanaging-the-personal-api-tokens)
 
 - To create or learn more about Appcircle testing and distribution profiles, please refer to [Creating or Selecting a Distribution Profile](https://docs.appcircle.io/distribute/create-or-select-a-distribution-profile)
 
