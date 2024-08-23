@@ -90,6 +90,10 @@ Also, do not forget to add the plugin after your build steps. Because you will b
    }
 ```
 
+#### Automatic Profile Management
+
+**createProfileIfNotExists** paramater ensures that a user profile is automatically created if it does not already exist; if the profile name already exists, the app will be uploaded to that existing profile instead.
+
 ### Reference
 
 - For details on generating an Appcircle Personal Access Token, visit [Generating/Managing Personal API Tokens](https://docs.appcircle.io/appcircle-api/api-authentication#generatingmanaging-the-personal-api-tokens)
