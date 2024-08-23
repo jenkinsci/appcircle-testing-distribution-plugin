@@ -23,7 +23,7 @@ import org.kohsuke.stapler.verb.POST;
 
 public class TestingDistributionBuilder extends Builder implements SimpleBuildStep {
 
-    private final Secret accessToken;
+    private final Secret personalAPIToken;
     private final String profileName;
     private final Boolean createProfileIfNotExists;
     private final String appPath;
@@ -31,8 +31,12 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
 
     @DataBoundConstructor
     public TestingDistributionBuilder(
-            String accessToken, String appPath, String profileName, Boolean createProfileIfNotExists, String message) {
-        this.accessToken = Secret.fromString(accessToken);
+            String personalAPIToken,
+            String appPath,
+            String profileName,
+            Boolean createProfileIfNotExists,
+            String message) {
+        this.personalAPIToken = Secret.fromString(personalAPIToken);
         this.appPath = appPath;
         this.profileName = profileName;
         this.createProfileIfNotExists = createProfileIfNotExists;
@@ -53,7 +57,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
                         + ". For Android, use .apk or .aab. For iOS, use .ipa.");
             }
 
-            UserResponse response = AuthService.getAcToken(this.accessToken.getPlainText(), listener);
+            UserResponse response = AuthService.getAcToken(this.personalAPIToken.getPlainText(), listener);
             listener.getLogger().println("Login is successful.");
 
             UploadService uploadService = new UploadService(
