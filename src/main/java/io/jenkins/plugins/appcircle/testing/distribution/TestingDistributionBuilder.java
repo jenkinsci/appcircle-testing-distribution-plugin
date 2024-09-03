@@ -43,6 +43,26 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         this.message = message;
     }
 
+    public String getPersonalAPIToken() {
+        return personalAPIToken.getPlainText();
+    }
+
+    public String getProfileName() {
+        return profileName;
+    }
+
+    public boolean isCreateProfileIfNotExists() {
+        return createProfileIfNotExists;
+    }
+
+    public String getAppPath() {
+        return appPath;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
     @Override
     public void perform(
             @NonNull Run<?, ?> run,

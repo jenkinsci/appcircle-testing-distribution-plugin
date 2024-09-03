@@ -1,18 +1,18 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:entry title="${%Personal API Token}" field="personalAPIToken">
-        <f:password checkMethod="post" />
+    <f:entry title="Personal API Token" field="personalAPIToken">
+        <f:password value="${instance.personalAPIToken}"/>
     </f:entry>
-    <f:entry title="${%Profile Name}" field="profileName">
-        <f:textbox checkMethod="post" />
+    <f:entry title="Profile Name" field="profileName">
+        <f:textbox value="${instance.profileName}"/>
     </f:entry>
     <f:entry title="Create Profile If Not Exists" field="createProfileIfNotExists">
-        <f:checkbox checked="${createProfileIfNotExists}" />
+        <f:checkbox checked="${instance.createProfileIfNotExists}"/>
     </f:entry>
-    <f:entry title="${%App Path}" field="appPath">
-        <f:textbox checkMethod="post" />
+    <f:entry title="App Path" field="appPath">
+        <f:textbox value="${instance.appPath}"/>
     </f:entry>
-    <f:entry title="${%Message}" field="message">
-        <f:textbox checkMethod="post" />
+    <f:entry title="Message" field="message">
+        <f:textbox value="${instance.message}"/>
     </f:entry>
 </j:jelly>
