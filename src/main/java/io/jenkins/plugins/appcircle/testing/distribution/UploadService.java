@@ -178,7 +178,8 @@ public class UploadService {
                     Thread.sleep(2000);
                     return checkUploadStatus(taskId, listener);
                 } else if (stateValue == 3) {
-                    listener.getLogger().println("✔ App uploaded successfully.");
+                    listener.getLogger()
+                            .println(this.appPath + " uploaded to the Appcircle Enterprise Store successfully.");
                 }
             }
         } catch (Exception e) {
