@@ -179,7 +179,7 @@ public class UploadService {
                     return checkUploadStatus(taskId, listener);
                 } else if (stateValue == 3) {
                     listener.getLogger()
-                            .println(this.appPath + " uploaded to the Appcircle Enterprise Store successfully.");
+                            .println(this.appPath + " uploaded to the Appcircle Testing Distribution successfully.");
                 }
             }
         } catch (Exception e) {
