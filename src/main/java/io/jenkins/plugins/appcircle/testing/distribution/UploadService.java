@@ -120,7 +120,7 @@ public class UploadService {
         }
     }
 
-    public String getProfileId() throws IOException {
+    public Profile getProfileId() throws IOException {
         // Fetch distribution profiles
         AppVersions[] profiles = getDistributionProfiles();
         String profileId = null;
@@ -149,7 +149,7 @@ public class UploadService {
             profileId = newProfile.getString("id");
         }
 
-        return profileId;
+        return new Profile(profileId, profileId == null);
     }
 
     Boolean checkUploadStatus(String taskId, @NonNull TaskListener listener) {
@@ -188,5 +188,24 @@ public class UploadService {
         }
 
         return true;
+    }
+}
+
+class Profile {
+    private final String id;
+    private final boolean created;
+
+    public Profile(String id, Boolean created) {
+        this.id = id;
+        this.created = created;
+    }
+
+    // Getters for id and name
+    public String getId() {
+        return id;
+    }
+
+    public boolean getCreated() {
+        return created;
     }
 }
