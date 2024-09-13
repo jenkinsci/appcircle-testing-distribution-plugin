@@ -124,6 +124,7 @@ public class UploadService {
         // Fetch distribution profiles
         AppVersions[] profiles = getDistributionProfiles();
         String profileId = null;
+        Boolean isProfileCreated = false;
 
         // Iterate over the profiles to find the matching one
         for (AppVersions profile : profiles) {
@@ -142,6 +143,7 @@ public class UploadService {
 
         // Create profile if not found and the option is true
         if (profileId == null && this.createProfileIfNotExists) {
+            isProfileCreated = true;
             JSONObject newProfile = this.createDistributionProfile();
             if (newProfile == null) {
                 throw new AbortException("Error: The new profile could not be created.");
@@ -149,7 +151,7 @@ public class UploadService {
             profileId = newProfile.getString("id");
         }
 
-        return new Profile(profileId, profileId == null);
+        return new Profile(profileId, isProfileCreated);
     }
 
     Boolean checkUploadStatus(String taskId, @NonNull TaskListener listener) {

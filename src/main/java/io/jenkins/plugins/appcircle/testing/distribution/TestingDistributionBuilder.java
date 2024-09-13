@@ -85,9 +85,11 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
 
             Profile profile = uploadService.getProfileId();
             JSONObject uploadResponse = uploadService.uploadArtifact(profile.getId());
-            listener.getLogger()
-                    .println("The test profile" + "'" + this.profileName + "'"
-                            + "could not be found. A new profile is being created...");
+            if (profile.getCreated()) {
+                listener.getLogger()
+                        .println("The test profile" + "'" + this.profileName + "'"
+                                + " could not be found. A new profile is being created...");
+            }
             listener.getLogger().println("App upload process - task id: " + uploadResponse.optString("taskId"));
             uploadService.checkUploadStatus(uploadResponse.optString("taskId"), listener);
 
