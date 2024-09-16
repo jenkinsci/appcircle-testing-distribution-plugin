@@ -9,7 +9,7 @@
     <relativePath />
   </parent>
 
-  <groupId>io.jenkins.plugins</groupId>
+  <groupId>io.appcircle.plugins</groupId>
   <artifactId>appcircle-testing-distribution</artifactId>
   <version>1.0</version>
   <packaging>hpi</packaging>
