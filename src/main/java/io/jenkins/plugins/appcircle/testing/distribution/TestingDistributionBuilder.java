@@ -74,7 +74,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         try {
             if (!validateFileExtension(this.appPath)) {
                 throw new IOException("Invalid file extension: " + this.appPath
-                        + ". For Android, use .apk or .aab. For iOS, use .ipa or use zip for both");
+                        + ". For Android, use .apk or .aab. For iOS, use .ipa or .zip");
             }
 
             UserResponse response = AuthService.getAcToken(this.personalAPIToken.getPlainText(), listener);

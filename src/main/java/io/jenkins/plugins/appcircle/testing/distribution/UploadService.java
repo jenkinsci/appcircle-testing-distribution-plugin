@@ -154,7 +154,7 @@ public class UploadService {
         return new Profile(profileId, isProfileCreated);
     }
 
-    Boolean checkUploadStatus(String taskId, @NonNull TaskListener listener) {
+    Boolean checkUploadStatus(String taskId, @NonNull TaskListener listener) throws Exception {
         String url = String.format("%s/task/v1/tasks/%s", BASE_URL, taskId);
         String result = "";
 
@@ -173,9 +173,9 @@ public class UploadService {
                 @Nullable String stateName = jsonResponse.optString("stateName");
 
                 if (stateName == null) {
-                    listener.getLogger().println("Upload Status Could Not Received");
+                    throw new Error("Upload Status Could Not Received");
                 } else if (stateValue == 2) {
-                    listener.getLogger().println("App uploaded but could not processed");
+                    throw new Exception("App upload status could not processed");
                 } else if (stateValue == 1) {
                     Thread.sleep(2000);
                     return checkUploadStatus(taskId, listener);
@@ -185,8 +185,7 @@ public class UploadService {
                 }
             }
         } catch (Exception e) {
-            System.err.println("IO Exception occurred while executing request: " + e.getMessage());
-            e.printStackTrace();
+            throw e;
         }
 
         return true;
