@@ -29,6 +29,14 @@
     <url>https://github.com/${gitHubRepo}</url>
   </scm>
 
+  <distributionManagement>
+    <repository>
+      <id>maven.jenkins-ci.org</id>
+      <!-- This should match the ID in settings.xml -->
+      <url>https://repo.jenkins-ci.org/releases/</url>
+    </repository>
+  </distributionManagement>
+
   <properties>
     <revision>1.1</revision>
     <changelist>-SNAPSHOT</changelist>
