@@ -9,9 +9,9 @@
     <relativePath />
   </parent>
 
-  <groupId>io.appcircle.plugins</groupId>
+  <groupId>io.jenkins.plugins</groupId>
   <artifactId>appcircle-testing-distribution</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>${revision}-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>Appcircle Testing Distribution</name>
@@ -38,8 +38,7 @@
   </distributionManagement>
 
   <properties>
-    <revision>1.2</revision>
-    <changelist>-SNAPSHOT</changelist>
+    <changelist>-999999-SNAPSHOT</changelist>
 
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
     <jenkins.version>2.440.3</jenkins.version>
