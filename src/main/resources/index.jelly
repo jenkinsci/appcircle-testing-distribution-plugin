@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-    Appcircle Testing Distribution
+    Testing Distribution is the seamless binary distribution of Android APK/AAB and iOS IPA files, allowing developers to create test groups and share builds using enterprise-grade authentication methods.
 </div>

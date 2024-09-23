@@ -1,4 +1,4 @@
-# Appcircle Testing Distribution
+Testing Distribution is the seamless binary distribution of Android APK/AAB and iOS IPA files, allowing developers to create test groups and share builds using enterprise-grade authentication methods.
 
 Appcircle simplifies the distribution of builds to test teams with an extensive platform for managing and tracking applications, versions, testers, and teams. Appcircle integrates with enterprise authentication mechanisms such as LDAP and SSO, ensuring secure distribution of testing packages. Learn more about Appcircle testing distribution. Learn more about [Appcircle testing distribution](https://appcircle.io/testing-distribution)
 
