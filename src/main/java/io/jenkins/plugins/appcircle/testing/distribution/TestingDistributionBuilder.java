@@ -74,7 +74,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         try {
             if (!validateFileExtension(this.appPath)) {
                 throw new IOException("Invalid file extension: " + this.appPath
-                        + ". For Android, use .apk or .aab. For iOS, use .ipa or .zip");
+                        + ". For Android, use .apk or .aab. For iOS, use .ipa");
             }
 
             UserResponse response = AuthService.getAcToken(this.personalAPIToken.getPlainText(), listener);
@@ -87,7 +87,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
             JSONObject uploadResponse = uploadService.uploadArtifact(profile.getId());
             if (profile.getCreated()) {
                 listener.getLogger()
-                        .println("The test profile" + "'" + this.profileName + "'"
+                        .println("The test profile " + "'" + this.profileName + "'"
                                 + " could not be found. A new profile is being created...");
             }
             listener.getLogger().println("App upload process - task id: " + uploadResponse.optString("taskId"));
@@ -102,7 +102,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
     }
 
     Boolean validateFileExtension(String filePath) {
-        String[] validExtensions = {".apk", ".aab", ".ipa", ".zip"};
+        String[] validExtensions = {".apk", ".aab", ".ipa"};
         int lastIndex = filePath.lastIndexOf('.');
         String fileExtension = filePath.substring(lastIndex);
 
@@ -127,9 +127,8 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         @POST
         public FormValidation doCheckAppPath(@QueryParameter @NonNull String value) {
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
-            if (!value.matches(".*\\.(apk|aab|ipa|zip)$")) {
-                return FormValidation.error(
-                        "Invalid file extension: For Android, use .apk or .aab. For iOS, use .ipa or use zip for both");
+            if (!value.matches(".*\\.(apk|aab|ipa)$")) {
+                return FormValidation.error("Invalid file extension: For Android, use .apk or .aab. For iOS, use .ipa");
             }
             return FormValidation.ok();
         }

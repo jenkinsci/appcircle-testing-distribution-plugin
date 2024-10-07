@@ -15,7 +15,7 @@
   <packaging>hpi</packaging>
 
   <name>Appcircle Testing Distribution</name>
-  <description>Upload new versions of your Android, iOS to Appcircle Testing Distrbiution Module</description>
+  <description>Upload new versions of your Android, iOS to Appcircle Testing Distribution Module</description>
   <url>https://github.com/jenkinsci/appcircle-testing-distribution-plugin/blob/master/README.md</url>
   <licenses>
     <license>
