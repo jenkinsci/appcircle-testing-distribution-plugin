@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.ThreadLocalRandom;
 import org.apache.http.HttpEntity;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -73,9 +74,10 @@ public class UploadService {
         String fileId = uploadInfo.optString("fileId");
         String uploadUrl = uploadInfo.optString("uploadUrl");
         JSONObject configuration = uploadInfo.optJSONObject("configuration");
-        String httpMethod = (configuration != null && !configuration.optString("httpMethod").isEmpty())
-                ? configuration.optString("httpMethod").toUpperCase()
-                : "PUT";
+        String httpMethod =
+                (configuration != null && !configuration.optString("httpMethod").isEmpty())
+                        ? configuration.optString("httpMethod").toUpperCase()
+                        : "PUT";
 
         // 2) Upload the binary to the signed URL.
         listener.getLogger().println("Uploading file to Appcircle...");
@@ -157,8 +159,7 @@ public class UploadService {
             HttpPost request = new HttpPost(uploadUrl);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            JSONObject signParameters =
-                    configuration != null ? configuration.optJSONObject("signParameters") : null;
+            JSONObject signParameters = configuration != null ? configuration.optJSONObject("signParameters") : null;
             if (signParameters != null) {
                 for (String key : signParameters.keySet()) {
                     builder.addTextBody(key, signParameters.optString(key));
@@ -212,8 +213,8 @@ public class UploadService {
 
     private void sleepWithJitter(long delayMillis) throws IOException {
         try {
-            // Deterministic jitter (Math.random is unavailable); spread retries by file size hash.
-            long jitter = Math.abs((this.appPath + delayMillis).hashCode()) % 300;
+            // Add up to 300ms of random jitter so concurrent retries do not align.
+            long jitter = ThreadLocalRandom.current().nextInt(300);
             Thread.sleep(delayMillis + jitter);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
