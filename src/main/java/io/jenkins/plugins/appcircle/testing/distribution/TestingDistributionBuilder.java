@@ -18,6 +18,7 @@ import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
 import org.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
@@ -28,6 +29,8 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
     private final Boolean createProfileIfNotExists;
     private final String appPath;
     private final String message;
+    private String authEndpoint;
+    private String apiEndpoint;
 
     @DataBoundConstructor
     public TestingDistributionBuilder(
@@ -45,6 +48,24 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
 
     public String getPersonalAPIToken() {
         return personalAPIToken.getPlainText();
+    }
+
+    public String getAuthEndpoint() {
+        return authEndpoint;
+    }
+
+    @DataBoundSetter
+    public void setAuthEndpoint(String authEndpoint) {
+        this.authEndpoint = authEndpoint;
+    }
+
+    public String getApiEndpoint() {
+        return apiEndpoint;
+    }
+
+    @DataBoundSetter
+    public void setApiEndpoint(String apiEndpoint) {
+        this.apiEndpoint = apiEndpoint;
     }
 
     public String getProfileName() {
@@ -74,20 +95,26 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         try {
             if (!validateFileExtension(this.appPath)) {
                 throw new IOException("Invalid file extension: " + this.appPath
-                        + ". For Android, use .apk or .aab. For iOS, use .ipa or .zip");
+                        + ". For Android, use .apk or .aab. For iOS, use .ipa");
             }
 
-            UserResponse response = AuthService.getAcToken(this.personalAPIToken.getPlainText(), listener);
+            UserResponse response =
+                    AuthService.getAcToken(this.personalAPIToken.getPlainText(), this.authEndpoint, listener);
             listener.getLogger().println("Login is successful.");
 
             UploadService uploadService = new UploadService(
-                    response.getAccessToken(), message, appPath, profileName, this.createProfileIfNotExists);
+                    response.getAccessToken(),
+                    message,
+                    appPath,
+                    profileName,
+                    this.createProfileIfNotExists,
+                    this.apiEndpoint);
 
             Profile profile = uploadService.getProfileId();
-            JSONObject uploadResponse = uploadService.uploadArtifact(profile.getId());
+            JSONObject uploadResponse = uploadService.uploadArtifact(profile.getId(), listener);
             if (profile.getCreated()) {
                 listener.getLogger()
-                        .println("The test profile" + "'" + this.profileName + "'"
+                        .println("The test profile " + "'" + this.profileName + "'"
                                 + " could not be found. A new profile is being created...");
             }
             listener.getLogger().println("App upload process - task id: " + uploadResponse.optString("taskId"));
@@ -102,7 +129,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
     }
 
     Boolean validateFileExtension(String filePath) {
-        String[] validExtensions = {".apk", ".aab", ".ipa", ".zip"};
+        String[] validExtensions = {".apk", ".aab", ".ipa"};
         int lastIndex = filePath.lastIndexOf('.');
         String fileExtension = filePath.substring(lastIndex);
 
@@ -127,9 +154,8 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         @POST
         public FormValidation doCheckAppPath(@QueryParameter @NonNull String value) {
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
-            if (!value.matches(".*\\.(apk|aab|ipa|zip)$")) {
-                return FormValidation.error(
-                        "Invalid file extension: For Android, use .apk or .aab. For iOS, use .ipa or use zip for both");
+            if (!value.matches(".*\\.(apk|aab|ipa)$")) {
+                return FormValidation.error("Invalid file extension: For Android, use .apk or .aab. For iOS, use .ipa");
             }
             return FormValidation.ok();
         }

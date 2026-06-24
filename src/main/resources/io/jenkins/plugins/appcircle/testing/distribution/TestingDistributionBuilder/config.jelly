@@ -15,4 +15,12 @@
     <f:entry title="Message" field="message">
         <f:textbox value="${instance.message}"/>
     </f:entry>
+    <f:advanced title="Self-Hosted Appcircle">
+        <f:entry title="Auth Endpoint" field="authEndpoint">
+            <f:textbox value="${instance.authEndpoint}"/>
+        </f:entry>
+        <f:entry title="API Endpoint" field="apiEndpoint">
+            <f:textbox value="${instance.apiEndpoint}"/>
+        </f:entry>
+    </f:advanced>
 </j:jelly>
