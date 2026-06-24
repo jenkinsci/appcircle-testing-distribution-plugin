@@ -39,7 +39,7 @@
   </distributionManagement>
 
   <properties>
-    <revision>1.12</revision>
+    <revision>2.0.0</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->

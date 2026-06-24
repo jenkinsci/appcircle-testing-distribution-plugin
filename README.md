@@ -48,7 +48,7 @@ Overall, using testing distribution in mobile DevOps significantly enhances the 
 
 - Jenkins 2.440.3
 
-Note: We currently support **Appcircle Cloud**, with **self-hosted** support planned in our roadmap.
+Note: Both **Appcircle Cloud** and **self-hosted** Appcircle installations are supported. See [Self-Hosted Appcircle](#self-hosted-appcircle) to configure custom endpoints.
 
 ## Getting started
 
@@ -109,6 +109,28 @@ Also, do not forget to add the plugin after your build steps. Because you will b
 - `createProfileIfNotExists`: Ensures that a user profile is automatically created if it does not already exist; if the profile name already exists, the app will be uploaded to that existing profile instead.
 - `appPath`: Indicates the file path to the application that will be uploaded to Appcircle Testing Distribution Profile.
 - `message`: Your message to testers, ensuring they receive important updates and information regarding the application.
+
+#### Self-Hosted Appcircle
+
+If you run a self-hosted Appcircle installation, point the plugin to your own servers with the optional
+`authEndpoint` and `apiEndpoint` parameters. When omitted, the plugin uses the Appcircle cloud defaults
+(`https://auth.appcircle.io` and `https://api.appcircle.io`), so existing cloud configurations keep working
+without any change.
+
+```Groovy
+   appcircleTestingDistribution personalAPIToken: AC_PAT,
+           profileName: 'PROFILE_NAME',
+           createProfileIfNotExists: false,
+           appPath: 'APP_PATH',
+           message: 'MESSAGE',
+           authEndpoint: 'https://auth.your-appcircle-domain.com',
+           apiEndpoint: 'https://api.your-appcircle-domain.com'
+```
+
+- `authEndpoint`: Base URL of the self-hosted Appcircle authentication server. Optional; defaults to `https://auth.appcircle.io`.
+- `apiEndpoint`: Base URL of the self-hosted Appcircle API server. Optional; defaults to `https://api.appcircle.io`.
+
+> **Self-signed or private CA certificates:** If your self-hosted Appcircle server presents a self-signed certificate (or one issued by a private/internal CA), the plugin's HTTPS requests will fail certificate validation. The plugin does not disable TLS verification. To use it, add the server's CA certificate to the trust store of the JVM running Jenkins — for example import it into the JDK `cacerts` with `keytool`, or start Jenkins with `-Djavax.net.ssl.trustStore=/path/to/truststore`.
 
 ### Reference
 
