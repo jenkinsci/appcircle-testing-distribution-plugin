@@ -15,7 +15,7 @@
   <packaging>hpi</packaging>
 
   <name>Appcircle Testing Distribution</name>
-  <description>Upload new versions of your Android, iOS to Appcircle Testing Distribution Module</description>
+  <description>Appcircle Testing Distribution enables the binary distribution of Android (.apk, .aab) and iOS (.ipa) files, allowing teams to create test groups and share builds using enterprise authentication methods such as SSO and LDAP.</description>
   <url>https://github.com/jenkinsci/appcircle-testing-distribution-plugin/blob/master/README.md</url>
   <licenses>
     <license>
