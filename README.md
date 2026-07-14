@@ -144,6 +144,8 @@ without any change.
 
 - To create or learn more about Appcircle testing and distribution profiles, please refer to [Creating or Selecting a Distribution Profile](https://docs.appcircle.io/distribute/create-or-select-a-distribution-profile)
 
+- For the full plugin setup guide, see the [Appcircle Testing Distribution documentation](https://docs.appcircle.io/marketplace/jenkins/testing-distribution)
+
 ## Issues
 
 Report issues and enhancements at info@appcircle.io
