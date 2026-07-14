@@ -10,7 +10,7 @@ Testing distribution is the process of distributing test builds to designated te
 
 ## Benefits of Using Testing Distribution
 
-1. **Simplified Binary Distribution**.
+1. **Simplified Binary Distribution:**
    - **Skip Traditional Stores:** Share IPA, APK, AAB files directly, avoiding the need to use App Store TestFlight or Google Play Internal Testing.
 2. **Streamlined Workflow:**
    - **Automated Processes:** Platforms like Appcircle automate the distribution process, saving time and reducing manual effort.
