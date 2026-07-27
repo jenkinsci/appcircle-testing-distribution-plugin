@@ -2,6 +2,7 @@ package io.jenkins.plugins.appcircle.testing.distribution;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.TaskListener;
+import hudson.util.Secret;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,7 +20,7 @@ public class AuthService {
 
     public static final String DEFAULT_AUTH_ENDPOINT = "https://auth.appcircle.io";
 
-    public static UserResponse getAcToken(String pat, String authEndpoint, @NonNull TaskListener listener)
+    public static UserResponse getAcToken(Secret pat, String authEndpoint, @NonNull TaskListener listener)
             throws IOException, URISyntaxException {
         String baseUrl = (authEndpoint == null || authEndpoint.trim().isEmpty())
                 ? DEFAULT_AUTH_ENDPOINT
@@ -36,7 +37,7 @@ public class AuthService {
 
         // Set parameters
         Map<String, String> params = new HashMap<>();
-        params.put("pat", pat);
+        params.put("pat", Secret.toString(pat));
 
         // Convert parameters to form data
         StringEntity entity = new StringEntity(encodeParams(params));
@@ -72,17 +73,18 @@ public class AuthService {
 }
 
 class UserResponse {
-    private String accessToken;
+    // Stored as Secret so the access token is never held (or serialized) as plaintext.
+    private Secret accessToken;
 
     public UserResponse(String accessToken) {
-        this.accessToken = accessToken;
+        this.accessToken = Secret.fromString(accessToken);
     }
 
     public String getAccessToken() {
-        return accessToken;
+        return Secret.toString(accessToken);
     }
 
     public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
+        this.accessToken = Secret.fromString(accessToken);
     }
 }

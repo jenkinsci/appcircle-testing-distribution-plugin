@@ -13,7 +13,6 @@ import hudson.util.Secret;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import javax.servlet.ServletException;
 import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.Symbol;
 import org.json.JSONObject;
@@ -46,8 +45,8 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         this.message = message;
     }
 
-    public String getPersonalAPIToken() {
-        return personalAPIToken.getPlainText();
+    public Secret getPersonalAPIToken() {
+        return personalAPIToken;
     }
 
     public String getAuthEndpoint() {
@@ -98,8 +97,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
                         + ". For Android, use .apk or .aab. For iOS, use .ipa");
             }
 
-            UserResponse response =
-                    AuthService.getAcToken(this.personalAPIToken.getPlainText(), this.authEndpoint, listener);
+            UserResponse response = AuthService.getAcToken(this.personalAPIToken, this.authEndpoint, listener);
             listener.getLogger().println("Login is successful.");
 
             UploadService uploadService = new UploadService(
@@ -110,8 +108,15 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
                     this.createProfileIfNotExists,
                     this.apiEndpoint);
 
+            // The artifact lives in the build workspace on the agent, not on the controller,
+            // so resolve it through the FilePath passed to perform() (remote-safe access).
+            FilePath artifact = workspace.child(this.appPath);
+            if (!artifact.exists()) {
+                throw new IOException("App path not found in workspace: " + this.appPath);
+            }
+
             Profile profile = uploadService.getProfileId();
-            JSONObject uploadResponse = uploadService.uploadArtifact(profile.getId(), listener);
+            JSONObject uploadResponse = uploadService.uploadArtifact(profile.getId(), artifact, listener);
             if (profile.getCreated()) {
                 listener.getLogger()
                         .println("The test profile " + "'" + this.profileName + "'"
@@ -144,36 +149,15 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
+        // Validate the artifact file extension only. No sensitive/back-end access, so no permission
+        // check is needed here; the lgtm suppression tells the Jenkins security scan this is intentional.
+        // Empty/required validation for the other fields is handled declaratively in config.jelly.
         @POST
-        public FormValidation doCheckAccessToken(@QueryParameter @NonNull String value)
-                throws IOException, ServletException {
-            if (value.isEmpty()) return FormValidation.error("Access Token cannot be empty");
-            return FormValidation.ok();
-        }
-
-        @POST
-        public FormValidation doCheckAppPath(@QueryParameter @NonNull String value) {
+        public FormValidation doCheckAppPath(@QueryParameter String value) { // lgtm[jenkins/no-permission-check]
             if (value.isEmpty()) return FormValidation.error("App Path cannot be empty");
             if (!value.matches(".*\\.(apk|aab|ipa)$")) {
                 return FormValidation.error("Invalid file extension: For Android, use .apk or .aab. For iOS, use .ipa");
             }
-            return FormValidation.ok();
-        }
-
-        @POST
-        public FormValidation doCheckProfileName(@QueryParameter @NonNull String value) {
-            if (value.isEmpty()) return FormValidation.error("Profile Name cannot be empty");
-            return FormValidation.ok();
-        }
-
-        @POST
-        public FormValidation doCheckCreateProfileIfNotExists(@QueryParameter Boolean value) {
-            return FormValidation.ok();
-        }
-
-        @POST
-        public FormValidation doCheckMessage(@QueryParameter @NonNull String value) {
-            if (value.isEmpty()) return FormValidation.error("Message cannot be empty");
             return FormValidation.ok();
         }
 
