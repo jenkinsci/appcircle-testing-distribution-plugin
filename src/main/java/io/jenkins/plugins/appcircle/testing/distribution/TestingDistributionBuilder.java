@@ -30,6 +30,7 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
     private final String message;
     private String authEndpoint;
     private String apiEndpoint;
+    private String subOrganizationName;
 
     @DataBoundConstructor
     public TestingDistributionBuilder(
@@ -67,6 +68,15 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
         this.apiEndpoint = apiEndpoint;
     }
 
+    public String getSubOrganizationName() {
+        return subOrganizationName;
+    }
+
+    @DataBoundSetter
+    public void setSubOrganizationName(String subOrganizationName) {
+        this.subOrganizationName = subOrganizationName;
+    }
+
     public String getProfileName() {
         return profileName;
     }
@@ -97,16 +107,11 @@ public class TestingDistributionBuilder extends Builder implements SimpleBuildSt
                         + ". For Android, use .apk or .aab. For iOS, use .ipa");
             }
 
-            UserResponse response = AuthService.getAcToken(this.personalAPIToken, this.authEndpoint, listener);
-            listener.getLogger().println("Login is successful.");
+            String accessToken = AuthService.resolveAccessToken(
+                    this.personalAPIToken, this.authEndpoint, this.apiEndpoint, this.subOrganizationName, listener);
 
             UploadService uploadService = new UploadService(
-                    response.getAccessToken(),
-                    message,
-                    appPath,
-                    profileName,
-                    this.createProfileIfNotExists,
-                    this.apiEndpoint);
+                    accessToken, message, appPath, profileName, this.createProfileIfNotExists, this.apiEndpoint);
 
             // The artifact lives in the build workspace on the agent, not on the controller,
             // so resolve it through the FilePath passed to perform() (remote-safe access).

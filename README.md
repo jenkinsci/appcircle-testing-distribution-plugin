@@ -134,8 +134,28 @@ without any change.
 
 - `authEndpoint`: Base URL of the self-hosted Appcircle authentication server. Optional; defaults to `https://auth.appcircle.io`.
 - `apiEndpoint`: Base URL of the self-hosted Appcircle API server. Optional; defaults to `https://api.appcircle.io`.
+- Set `authEndpoint` and `apiEndpoint` together. If you set only one of them, the build stops before it sends a request, so a self-hosted token never goes to the Appcircle cloud.
 
 > **Self-signed or private CA certificates:** If your self-hosted Appcircle server presents a self-signed certificate (or one issued by a private/internal CA), the plugin's HTTPS requests will fail certificate validation. The plugin does not disable TLS verification. To use it, add the server's CA certificate to the trust store of the JVM running Jenkins, for example import it into the JDK `cacerts` with `keytool`, or start Jenkins with `-Djavax.net.ssl.trustStore=/path/to/truststore`.
+
+#### Sub-Organizations
+
+If your Personal API Token belongs to the root organization and the target testing distribution profile is in a sub-organization,
+set the optional `subOrganizationName` parameter. The plugin then uses a token of that sub-organization for all
+later requests. If you use a Personal API Token of the sub-organization, you do not need this parameter.
+
+```Groovy
+   appcircleTestingDistribution personalAPIToken: AC_PAT,
+           subOrganizationName: 'SUB_ORGANIZATION_NAME',
+           profileName: 'PROFILE_NAME',
+           createProfileIfNotExists: false,
+           appPath: 'APP_PATH',
+           message: 'MESSAGE'
+```
+
+- `subOrganizationName`: Optional. The exact name of the sub-organization (case-sensitive). If the plugin cannot find
+  the sub-organization, or the token cannot access it, the build fails. The plugin does not fall back to the root
+  organization.
 
 ### Reference
 
